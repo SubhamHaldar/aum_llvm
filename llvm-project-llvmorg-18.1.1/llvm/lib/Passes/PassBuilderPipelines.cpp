@@ -80,6 +80,7 @@
 #include "llvm/Transforms/Scalar/AnnotationRemarks.h"
 #include "llvm/Transforms/Scalar/BDCE.h"
 #include "llvm/Transforms/Scalar/CallSiteSplitting.h"
+#include "llvm/Transforms/Scalar/CdacLI.h"
 #include "llvm/Transforms/Scalar/ConstraintElimination.h"
 #include "llvm/Transforms/Scalar/CorrelatedValuePropagation.h"
 #include "llvm/Transforms/Scalar/DFAJumpThreading.h"
@@ -194,6 +195,10 @@ static cl::opt<bool> ExtraVectorizerPasses(
 
 static cl::opt<bool> RunNewGVN("enable-newgvn", cl::init(false), cl::Hidden,
                                cl::desc("Run the NewGVN pass"));
+
+static cl::opt<bool> EnableCdacLI(
+    "enable-cdacli", cl::init(false), cl::Hidden,
+    cl::desc("Enable the CdacLI pass"));
 
 static cl::opt<bool> EnableLoopInterchange(
     "enable-loopinterchange", cl::init(false), cl::Hidden,
@@ -455,6 +460,10 @@ PassBuilder::buildO1FunctionSimplificationPipeline(OptimizationLevel Level,
   if (EnableLoopInterchange)
     LPM2.addPass(LoopInterchangePass());
   
+  if(EnableCdacLI){
+    LPM2.addPass(CdacLIPass());
+  }
+  
   if(Level==OptimizationLevel::Ocdac){//added
           LPM2.addPass(LoopInterchangePass());
    }
@@ -640,6 +649,10 @@ PassBuilder::buildFunctionSimplificationPipeline(OptimizationLevel Level,
 
   if (EnableLoopInterchange)
     LPM2.addPass(LoopInterchangePass());
+  
+  if(EnableCdacLI){
+     LPM2.addPass(CdacLIPass());
+   }
 
   if(Level==OptimizationLevel::Ocdac){//added
 	LPM2.addPass(LoopInterchangePass());     

@@ -681,6 +681,9 @@ static unsigned getOptimizationLevel(ArgList &Args, InputKind IK,
 
     if (A->getOption().matches(options::OPT_Ofast))
       return 3;
+   
+    if (A->getOption().matches(options::OPT_Ocdac))//added
+      return 3;
 
     assert(A->getOption().matches(options::OPT_O));
 

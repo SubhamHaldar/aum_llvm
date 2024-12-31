@@ -5139,11 +5139,17 @@ void Clang::ConstructJob(Compilation &C, const JobAction &JA,
 
     // Optimization level for CodeGen.
     if (const Arg *A = Args.getLastArg(options::OPT_O_Group)) {
-      if (A->getOption().matches(options::OPT_O4)||
-  	 A->getOption().matches(options::OPT_Ocdac)) {
+      if (A->getOption().matches(options::OPT_O4)) {
         CmdArgs.push_back("-O3");
-       // D.Diag(diag::warn_O4_is_O3);//commented 
-      } else {
+        D.Diag(diag::warn_O4_is_O3);//commented 
+      }else if(A->getOption().matches(options::OPT_Ocdac)){
+          CmdArgs.push_back("-O3");
+	  CmdArgs.push_back("-mllvm");
+	  //CmdArgs.push_back("-enable-loopinterchange");
+          CmdArgs.push_back("-enable-cdacli");
+	  D.Diag(diag::warn_Ocdac_used);
+      }
+      else {
         A->render(Args, CmdArgs);
       }
     }
@@ -6069,11 +6075,17 @@ void Clang::ConstructJob(Compilation &C, const JobAction &JA,
 
   // Manually translate -O4 to -O3; let clang reject others.
   if (Arg *A = Args.getLastArg(options::OPT_O_Group)) {
-    if (A->getOption().matches(options::OPT_O4)||
-	A->getOption().matches(options::OPT_Ocdac)) {
+    if (A->getOption().matches(options::OPT_O4)) {
       CmdArgs.push_back("-O3");
-      //D.Diag(diag::warn_O4_is_O3);//commented
-    } else {
+      D.Diag(diag::warn_O4_is_O3);//commented
+    }else if(A->getOption().matches(options::OPT_Ocdac)){
+	CmdArgs.push_back("-O3");
+	CmdArgs.push_back("-mllvm");
+        //CmdArgs.push_back("-enable-loopinterchange");
+        CmdArgs.push_back("-enable-cdacli");
+        D.Diag(diag::warn_Ocdac_used);
+    }
+    else {
       A->render(Args, CmdArgs);
     }
   }
@@ -8818,9 +8830,11 @@ void LinkerWrapper::ConstructJob(Compilation &C, const JobAction &JA,
   if (const Arg *A = Args.getLastArg(options::OPT_O_Group)) {
     StringRef OOpt;
     if (A->getOption().matches(options::OPT_O4) ||
-        A->getOption().matches(options::OPT_Ofast)||
-	A->getOption().matches(options::OPT_Ocdac))
+        A->getOption().matches(options::OPT_Ofast))
       OOpt = "3";
+    else if (A->getOption().matches(options::OPT_Ocdac)){
+	OOpt = "3";
+    }
     else if (A->getOption().matches(options::OPT_O)) {
       OOpt = A->getValue();
       if (OOpt == "g")
